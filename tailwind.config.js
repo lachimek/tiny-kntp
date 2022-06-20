@@ -7,7 +7,8 @@ module.exports = {
   theme: {
     extend: {},
     fontFamily: {
-      'roboto': ['Roboto', 'sans-serif'],
+      'comic': ['Comic', 'sans-serif'],
+      'oswald': ["Oswald", 'sans-serif']
     }
   },
   plugins: [],
