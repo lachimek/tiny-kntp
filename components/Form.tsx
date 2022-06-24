@@ -32,6 +32,8 @@ const Form = () => {
   const {
     register,
     handleSubmit,
+    setError,
+    clearErrors,
     formState: { errors },
   } = useForm<Inputs>({
     resolver: zodResolver(schema),
@@ -46,6 +48,19 @@ const Form = () => {
       setEnding(value);
     } else {
       setEnding('');
+      if (value.length < 3 && value.length !== 0) {
+        setError('optionalEnding', {
+          type: 'manual',
+          message: 'Minimum 3 characters or empty',
+        });
+      } else if (value.length === 0) {
+        clearErrors('optionalEnding');
+      } else {
+        setError('optionalEnding', {
+          type: 'custom',
+          message: 'Ending already taken',
+        });
+      }
     }
     setLoading(false);
   };
@@ -105,7 +120,10 @@ const Form = () => {
                   handleEndingChange(e.target.value),
                 1000
               )}
-              onKeyUp={() => setLoading(true)}
+              onKeyUp={() => {
+                setLoading(true);
+                clearErrors('optionalEnding');
+              }}
             />
 
             <div className="bg-gray-700 w-fit md:w-1/5 rounded-r-lg transition-colors px-2 md:px-2 flex items-center justify-end">
@@ -113,6 +131,10 @@ const Form = () => {
               {!loading && ending !== '' && (
                 <span className="text-green-500 mr-2">&#10004;</span>
               )}
+              {!loading &&
+                errors.optionalEnding?.message === 'Ending already taken' && (
+                  <span className="text-red-500 mr-2">&#10006;</span>
+                )}
             </div>
           </div>
           {errors.optionalEnding && (
@@ -127,7 +149,7 @@ const Form = () => {
         </div>
         <div>
           <input
-            className="bg-white rounded-md font-semibold text-black py-2 w-full hover:bg-slate-200 transition-colors cursor-pointer"
+            className="bg-white rounded-md font-semibold text-gray-700 py-2 w-full hover:bg-slate-200 hover:text-black transition-colors cursor-pointer"
             type="submit"
             value="Make it tiny!"
           />
