@@ -1,17 +1,19 @@
-import React from 'react'
-import { useForm, SubmitHandler } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import * as z from 'zod'
+import React, { useEffect, useState } from 'react';
+import { useForm, SubmitHandler } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import debounce from 'debounce';
+import Loader from './Loader';
 
 type Inputs = {
-  longUrl: string
-  optionalEnding: string
-}
+  longUrl: string;
+  optionalEnding: string;
+};
 
 const expr =
-  /(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/gi
+  /(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/gi;
 
-const urlRegex = new RegExp(expr)
+const urlRegex = new RegExp(expr);
 
 const schema = z.object({
   longUrl: z
@@ -24,7 +26,7 @@ const schema = z.object({
     .max(20, { message: 'Maximum 20 characters' })
     .optional()
     .or(z.literal('')),
-})
+});
 
 const Form = () => {
   const {
@@ -33,10 +35,30 @@ const Form = () => {
     formState: { errors },
   } = useForm<Inputs>({
     resolver: zodResolver(schema),
-  })
+  });
+
+  const [ending, setEnding] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleEndingChange = (value: string) => {
+    const testData = 'okokok';
+    if (testData === value) {
+      setEnding(value);
+    } else {
+      setEnding('');
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    console.log('ending', ending);
+    console.log('loading', loading);
+  }, [ending, loading]);
+
   const onSubmit: SubmitHandler<Inputs> = (data) => {
-    console.log('data', data)
-  }
+    console.log('data', data);
+  };
+
   return (
     <div className="mt-16 md:mt-8 md:w-3/5">
       <form onSubmit={handleSubmit(onSubmit)}>
@@ -75,14 +97,23 @@ const Form = () => {
               className="appearance-none rounded-lg rounded-r-none py-2 px-3 w-4/5 text-gray-200 bg-gray-700 leading-tight focus:outline-none focus:shadow-inner"
               type="text"
               id="customEnding"
-              maxLength={25}
+              maxLength={20}
               placeholder="tiny.kntp.pl/CustomEnding"
               {...register('optionalEnding')}
+              onChange={debounce(
+                (e: React.ChangeEvent<HTMLInputElement>) =>
+                  handleEndingChange(e.target.value),
+                1000
+              )}
+              onKeyUp={() => setLoading(true)}
             />
 
-            <button className="bg-gray-700 w-fit md:w-1/5 rounded-r-lg text-gray-200 hover:text-gray-300 transition-colors border-l-2 border-gray-600 px-2 md:px-0">
-              Available?
-            </button>
+            <div className="bg-gray-700 w-fit md:w-1/5 rounded-r-lg transition-colors px-2 md:px-2 flex items-center justify-end">
+              {loading && ending === '' && <Loader />}
+              {!loading && ending !== '' && (
+                <span className="text-green-500 mr-2">&#10004;</span>
+              )}
+            </div>
           </div>
           {errors.optionalEnding && (
             <span className="text-red-500 text-sm">
@@ -103,7 +134,7 @@ const Form = () => {
         </div>
       </form>
     </div>
-  )
-}
+  );
+};
 
-export default Form
+export default Form;
