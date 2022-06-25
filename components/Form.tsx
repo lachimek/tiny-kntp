@@ -1,32 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import debounce from 'debounce';
+
 import Loader from './Loader';
+import { trpc } from '../utils/trpc';
+import { schema } from '../shared/form.schema';
 
 type Inputs = {
   longUrl: string;
   optionalEnding: string;
 };
-
-const expr =
-  /(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/gi;
-
-const urlRegex = new RegExp(expr);
-
-const schema = z.object({
-  longUrl: z
-    .string()
-    .min(1, { message: 'Field is required' })
-    .regex(urlRegex, { message: 'Not a valid url' }),
-  optionalEnding: z
-    .string()
-    .min(3, { message: 'Minimum 3 characters or empty' })
-    .max(20, { message: 'Maximum 20 characters' })
-    .optional()
-    .or(z.literal('')),
-});
 
 const Form = () => {
   const {
@@ -34,43 +17,62 @@ const Form = () => {
     handleSubmit,
     setError,
     clearErrors,
+    getValues,
     formState: { errors },
   } = useForm<Inputs>({
+    mode: 'onChange',
+    defaultValues: { longUrl: '', optionalEnding: '' },
     resolver: zodResolver(schema),
   });
 
-  const [ending, setEnding] = useState('');
-  const [loading, setLoading] = useState(false);
+  const createTinyLink = trpc.useMutation('create-tiny-link');
+  const checkIfEndingTaken = trpc.useMutation('check-if-taken');
 
-  const handleEndingChange = (value: string) => {
-    const testData = 'okokok';
-    if (testData === value) {
-      setEnding(value);
+  const [loading, setLoading] = useState(false);
+  const [checked, setChecked] = useState(false);
+  const [available, setAvailable] = useState(true);
+
+  const checkIfAvailable = async () => {
+    const value = getValues('optionalEnding');
+    setChecked(true);
+    if (value.length < 3 && value.length !== 0) {
+      setError('optionalEnding', {
+        type: 'manual',
+        message: 'Minimum 3 characters or empty',
+      });
+    } else if (value.length === 0) {
+      clearErrors('optionalEnding');
     } else {
-      setEnding('');
-      if (value.length < 3 && value.length !== 0) {
-        setError('optionalEnding', {
-          type: 'manual',
-          message: 'Minimum 3 characters or empty',
-        });
-      } else if (value.length === 0) {
-        clearErrors('optionalEnding');
-      } else {
+      console.log(value);
+      setLoading(true);
+      const response = await checkIfEndingTaken.mutateAsync({
+        optionalEnding: value,
+      });
+      clearErrors('optionalEnding');
+      if (response.ok) {
+        setAvailable(true);
+        setLoading(false);
+      } else if (!response.ok) {
+        setAvailable(false);
+        setLoading(false);
         setError('optionalEnding', {
           type: 'custom',
           message: 'Ending already taken',
         });
       }
     }
-    setLoading(false);
   };
 
-  useEffect(() => {
-    console.log('ending', ending);
-    console.log('loading', loading);
-  }, [ending, loading]);
-
-  const onSubmit: SubmitHandler<Inputs> = (data) => {
+  const onSubmit: SubmitHandler<Inputs> = async (data) => {
+    if (!checked && data.optionalEnding !== '') {
+      setError('optionalEnding', {
+        type: 'custom',
+        message: 'Please check if ending is available',
+      });
+    } else {
+      const response = await createTinyLink.mutateAsync(data);
+      console.log(response);
+    }
     console.log('data', data);
   };
 
@@ -101,7 +103,7 @@ const Form = () => {
             className="block text-gray-200 text-md mb-2"
             htmlFor="customEnding"
           >
-            Optional: Your own custom ending [up to 20 characters]
+            Optional: Your own custom ending [3 to 20 characters]
           </label>
           <div
             className={`w-full flex ${
@@ -115,27 +117,17 @@ const Form = () => {
               maxLength={20}
               placeholder="tiny.kntp.pl/CustomEnding"
               {...register('optionalEnding')}
-              onChange={debounce(
-                (e: React.ChangeEvent<HTMLInputElement>) =>
-                  handleEndingChange(e.target.value),
-                1000
-              )}
-              onKeyUp={() => {
-                setLoading(true);
-                clearErrors('optionalEnding');
-              }}
             />
-
-            <div className="bg-gray-700 w-fit md:w-1/5 rounded-r-lg transition-colors px-2 md:px-2 flex items-center justify-end">
-              {loading && ending === '' && <Loader />}
-              {!loading && ending !== '' && (
-                <span className="text-green-500 mr-2">&#10004;</span>
-              )}
-              {!loading &&
-                errors.optionalEnding?.message === 'Ending already taken' && (
-                  <span className="text-red-500 mr-2">&#10006;</span>
-                )}
-            </div>
+            <button
+              className={`bg-gray-700 w-fit md:w-1/5 rounded-r-lg text-gray-200 ${
+                errors.optionalEnding && 'text-red-500'
+              } hover:text-gray-300 transition-colors border-l-2 border-gray-600 px-2 md:px-0`}
+              type="button"
+              onClick={() => checkIfAvailable()}
+              disabled={loading}
+            >
+              {loading ? <Loader /> : 'Available?'}
+            </button>
           </div>
           {errors.optionalEnding && (
             <span className="text-red-500 text-sm">
@@ -152,6 +144,7 @@ const Form = () => {
             className="bg-white rounded-md font-semibold text-gray-700 py-2 w-full hover:bg-slate-200 hover:text-black transition-colors cursor-pointer"
             type="submit"
             value="Make it tiny!"
+            disabled={!available || loading}
           />
         </div>
       </form>
