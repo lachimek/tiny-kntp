@@ -16,10 +16,11 @@ export const appRouter = trpc
         // optional ending not an empty string or in 'db'
         if (
           input.optionalEnding !== '' &&
-          sampleTakenUrls.includes(input.optionalEnding.toLowerCase())
+          !sampleTakenUrls.includes(input.optionalEnding.toLowerCase())
         ) {
           //add it to 'db'
           sampleTakenUrls.push(input.optionalEnding);
+          console.log('all_urls_after_add', sampleTakenUrls);
           return { ok: true };
         } else {
           // optional ending non unique

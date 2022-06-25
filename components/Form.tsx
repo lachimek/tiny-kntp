@@ -18,6 +18,7 @@ const Form = () => {
     setError,
     clearErrors,
     getValues,
+    reset,
     formState: { errors },
   } = useForm<Inputs>({
     mode: 'onChange',
@@ -72,6 +73,8 @@ const Form = () => {
     } else {
       const response = await createTinyLink.mutateAsync(data);
       console.log(response);
+      setChecked(false);
+      reset();
     }
     console.log('data', data);
   };
