@@ -65,7 +65,8 @@ const Form = () => {
   };
 
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
-    if (!checked && data.customEnding !== '') {
+    if (!checked) {
+      console.log('Please check if ending is available');
       setError('customEnding', {
         type: 'custom',
         message: 'Please check if ending is available',
@@ -74,6 +75,7 @@ const Form = () => {
       const response = await createTinyLink.mutateAsync(data);
       console.log(response);
       setChecked(false);
+      setAvailable(false);
       reset();
     }
     console.log('data', data);
@@ -124,6 +126,10 @@ const Form = () => {
               maxLength={20}
               placeholder="tiny.kntp.pl/CustomEnding"
               {...register('customEnding')}
+              onChange={() => {
+                setAvailable(false);
+                setChecked(false);
+              }}
             />
             <button
               className={`bg-gray-700 w-fit md:w-1/5 rounded-r-lg text-gray-200 ${
@@ -153,7 +159,6 @@ const Form = () => {
             className="bg-white rounded-md font-semibold text-gray-700 py-2 w-full hover:bg-slate-200 hover:text-black transition-colors cursor-pointer"
             type="submit"
             value="Make it tiny!"
-            disabled={!available || loading}
           />
         </div>
       </form>
