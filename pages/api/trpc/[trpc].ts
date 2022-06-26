@@ -1,40 +1,37 @@
 import * as trpc from '@trpc/server';
 import * as trpcNext from '@trpc/server/adapters/next';
-import { schema, optionalEndingSchema } from '../../../shared/form.schema';
-
-const sampleTakenUrls = ['kntp123', 'xdxdxd', 'jdjdjd'];
+import { formSchema, checkIfExistsSchema } from '../../../shared/form.schema';
+import db from '../../../db';
 
 export const appRouter = trpc
   .router()
   .mutation('create-tiny-link', {
-    input: schema,
-    resolve({ input }) {
+    input: formSchema,
+    async resolve({ input }) {
       console.log('create', input);
-      console.log('all_urls', sampleTakenUrls);
-      // optional ending provided
-      if (input.optionalEnding) {
-        // optional ending not an empty string or in 'db'
-        if (
-          input.optionalEnding !== '' &&
-          !sampleTakenUrls.includes(input.optionalEnding.toLowerCase())
-        ) {
-          //add it to 'db'
-          sampleTakenUrls.push(input.optionalEnding);
-          console.log('all_urls_after_add', sampleTakenUrls);
-          return { ok: true };
-        } else {
-          // optional ending non unique
-          return { ok: false };
-        }
+      try {
+        const addedLink = await db.link.create({
+          data: {
+            redirectUrl: input.longUrl,
+            customEnding: input.customEnding,
+          },
+        });
+        console.log('addedLink', addedLink);
+        return { ok: true };
+      } catch (error) {
+        console.log(error);
+        return { ok: false };
       }
-      return { ok: false };
     },
   })
   .mutation('check-if-taken', {
-    input: optionalEndingSchema,
-    resolve({ input }) {
+    input: checkIfExistsSchema,
+    async resolve({ input }) {
       console.log('check', input);
-      if (sampleTakenUrls.includes(input.optionalEnding.toLowerCase())) {
+      const found = await db.link.findFirst({
+        where: { customEnding: input.customEnding },
+      });
+      if (found) {
         return { ok: false };
       }
       return { ok: true };
