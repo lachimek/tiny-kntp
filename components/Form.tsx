@@ -158,7 +158,7 @@ const Form = () => {
         </div>
         <div className="my-4 flex justify-between md:text-xl">
           <span>Your short link will be:</span>
-          <span>tiny.kntp.pl/test_link_kntp</span>
+          <span>tiny.kntp.pl/{getValues('customEnding') || '???'}</span>
         </div>
         <div>
           <input

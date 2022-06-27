@@ -17,5 +17,9 @@ export async function middleware(req: NextRequest) {
   if (data.status === 404) {
     return NextResponse.redirect(req.nextUrl.origin);
   }
-  return NextResponse.redirect(redirectUrl.redirectUrl);
+  let url = redirectUrl.redirectUrl;
+  if (!/^(?:f|ht)tps?\:\/\//.test(redirectUrl.redirectUrl)) {
+    url = 'http://' + redirectUrl.redirectUrl;
+  }
+  return NextResponse.redirect(new URL(url));
 }
