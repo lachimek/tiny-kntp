@@ -1,6 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import db from '../../../db';
 
+const CACHE_MAX_AGE = 60 * 60 * 24 * 7; // 7 days in seconds
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
@@ -23,9 +25,13 @@ export default async function handler(
     return;
   }
   console.log(found);
+
   res.setHeader('Content-Type', 'application/json');
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Cache-Control', 's-maxage=10000, stale-while-revalidate');
+  res.setHeader(
+    'Cache-Control',
+    `s-maxage=${CACHE_MAX_AGE}, stale-while-revalidate`
+  );
 
   return res.json({ redirectUrl: found.redirectUrl });
 }
