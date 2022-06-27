@@ -1,6 +1,10 @@
 import * as trpc from '@trpc/server';
 import * as trpcNext from '@trpc/server/adapters/next';
-import { formSchema, checkIfExistsSchema } from '../../../shared/form.schema';
+import {
+  formSchema,
+  checkIfExistsSchema,
+  getRedirectUrl,
+} from '../../../shared/form.schema';
 import db from '../../../db';
 
 export const appRouter = trpc
@@ -35,6 +39,19 @@ export const appRouter = trpc
         return { ok: false };
       }
       return { ok: true };
+    },
+  })
+  .query('get-redirect-url', {
+    input: getRedirectUrl,
+    async resolve({ input }) {
+      console.log('get-redirect-url', input);
+      const found = await db.link.findFirst({
+        where: { customEnding: input.customEnding },
+      });
+      if (!found) {
+        return { ok: false };
+      }
+      return { ok: true, found };
     },
   });
 

@@ -22,3 +22,7 @@ export const checkIfExistsSchema = z.object({
     .min(3, { message: 'Minimum 3 characters or empty' })
     .max(20, { message: 'Maximum 20 characters' }),
 });
+
+export const getRedirectUrl = z.object({
+  customEnding: z.string().min(3).max(20),
+});
