@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { toast } from 'react-toastify';
 
 import Loader from './Loader';
 import { trpc } from '../utils/trpc';
@@ -36,7 +37,6 @@ const Form = () => {
   const checkIfAvailable = async () => {
     const value = getValues('customEnding');
     console.log(value);
-
     setChecked(true);
     if (value.length < 3) {
       setError('customEnding', {
@@ -54,6 +54,7 @@ const Form = () => {
     if (response.ok) {
       setAvailable(true);
       setLoading(false);
+      toast.success('Your custom ending is available.');
     } else if (!response.ok) {
       setAvailable(false);
       setLoading(false);
@@ -61,6 +62,7 @@ const Form = () => {
         type: 'custom',
         message: 'Ending already taken',
       });
+      toast.error('Your custom ending is already taken.');
     }
   };
 
@@ -71,12 +73,16 @@ const Form = () => {
         type: 'custom',
         message: 'Please check if ending is available',
       });
+      toast.error('Please check if ending is available', {
+        toastId: 'check_if_taken_error',
+      });
     } else {
       const response = await createTinyLink.mutateAsync(data);
       console.log(response);
       setChecked(false);
       setAvailable(false);
       reset();
+      toast.success('Your tiny link has been created');
     }
     console.log('data', data);
   };
