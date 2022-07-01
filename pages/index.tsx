@@ -11,7 +11,7 @@ const Home: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <div className="font-oswald bg-slate-900 text-slate-200 h-screen">
+      <div className="font-oswald h-screen text-slate-200">
         <div className="h-full w-full absolute flex items-center justify-center">
           <div className="absolute w-[200px] scale-150">
             <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
@@ -42,7 +42,7 @@ const Home: NextPage = () => {
           </div>
         </div>
         <div className="flex justify-center h-full bg-black bg-opacity-20 backdrop-blur-2xl z-10">
-          <div className="flex mt-32 md:mt-40 flex-col items-center w-[800px]">
+          <div className="flex mt-8 sm:mt-32 md:mt-40 flex-col items-center w-[800px]">
             {/* form heading */}
             <div className="w-fit flex flex-col items-center">
               <h1 className="text-6xl md:text-7xl">TINY-KNTP</h1>

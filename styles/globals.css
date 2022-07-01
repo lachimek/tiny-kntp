@@ -6,3 +6,7 @@
     font-family: "Oswald";
     src: url("../public/Oswald.ttf");
   }
+
+  body {
+    background-color: rgb(15 23 42);
+  }
