@@ -88,7 +88,7 @@ const Form = () => {
   };
 
   return (
-    <div className="mt-16 md:mt-8 md:w-3/5">
+    <div className="mt-16 md:mt-8 sm:w-[400px] md:w-3/5">
       <form onSubmit={handleSubmit(onSubmit)}>
         <div>
           <label className="block text-gray-200 text-md mb-2" htmlFor="longUrl">
@@ -98,8 +98,9 @@ const Form = () => {
             className={`shadow rounded-lg w-full py-2 px-3 text-gray-200 bg-gray-700 leading-tight focus:outline-none focus:shadow-outline ${
               errors.longUrl && 'border-[1px] border-red-500'
             }`}
-            type="text"
+            type="url"
             id="longUrl"
+            autoComplete="off"
             placeholder="www.very-long-url.com/you-want-to-shorten"
             {...register('longUrl', { required: true })}
           />
@@ -129,6 +130,7 @@ const Form = () => {
               className="appearance-none rounded-lg rounded-r-none py-2 px-3 w-4/5 text-gray-200 bg-gray-700 leading-tight focus:outline-none focus:shadow-inner"
               type="text"
               id="customEnding"
+              autoComplete="off"
               maxLength={20}
               placeholder="tiny.kntp.pl/CustomEnding"
               {...register('customEnding')}
