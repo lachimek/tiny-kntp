@@ -24,6 +24,12 @@ export default async function handler(
     res.status(404).json({ error: true, message: 'url not found' });
     return;
   }
+
+  await db.link.update({
+    where: { customEnding: customEnding },
+    data: { entries: { increment: 1 } },
+  });
+
   console.log(found);
 
   res.setHeader('Content-Type', 'application/json');
