@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import db from '../../../db';
 
 const CACHE_MAX_AGE = 60 * 60 * 24 * 7; // 7 days in seconds
+const CACHE_MIN_AGE = 10; // 10 seconds
 
 export default async function handler(
   req: NextApiRequest,
@@ -36,7 +37,7 @@ export default async function handler(
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader(
     'Cache-Control',
-    `s-maxage=${CACHE_MAX_AGE}, stale-while-revalidate`
+    `s-maxage=${CACHE_MIN_AGE}, stale-while-revalidate=${CACHE_MAX_AGE}`
   );
 
   return res.json({ redirectUrl: found.redirectUrl });

@@ -21,5 +21,6 @@ export async function middleware(req: NextRequest) {
   if (!/^(?:f|ht)tps?\:\/\//.test(redirectUrl.redirectUrl)) {
     url = 'http://' + redirectUrl.redirectUrl;
   }
+
   return NextResponse.redirect(new URL(url));
 }
